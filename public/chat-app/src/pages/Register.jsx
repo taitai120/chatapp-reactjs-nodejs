@@ -1,19 +1,76 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { useState } from "react";
 import Logo from "../assets/logo.svg";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { registerRoute } from "../utils/APIRoutes";
 
 function Register() {
-    const [form, setForm] = useState({});
+    const [values, setValues] = useState({
+        username: "",
+        email: "",
+        password: "",
+        confirmPasword: "",
+    });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert("form");
+        if (handleValidation()) {
+            const { username, email, password, confirmPassword } = values;
+
+            const { data } = await axios.post(registerRoute, {
+                username,
+                email,
+                password,
+                confirmPassword,
+            });
+        }
     };
 
     const handleChange = (e) => {
-        console.log(e.target.value);
+        const { name, value } = e.target;
+        setValues({
+            ...values,
+            [name]: value,
+        });
+    };
+
+    const toastOptions = {
+        position: "bottom-right",
+        autoClose: 4000,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+    };
+
+    const handleValidation = () => {
+        const { username, email, password, confirmPassword } = values;
+
+        if (username.length < 3) {
+            toast.error(
+                "Username length should be greater than 3 characters",
+                toastOptions
+            );
+            return false;
+        } else if (password.length < 8) {
+            toast.error(
+                "Password length should be greater than 8 characters",
+                toastOptions
+            );
+            return false;
+        } else if (password !== confirmPassword) {
+            toast.error(
+                "Ppassword and confirm password should be same",
+                toastOptions
+            );
+            return false;
+        } else if (email === "") {
+            toast.error("Email is required", toastOptions);
+            return false;
+        }
+
+        return true;
     };
 
     return (
@@ -28,18 +85,21 @@ function Register() {
                         type="text"
                         placeholder="Username"
                         name="username"
+                        value={values.username}
                         onChange={handleChange}
                     />
                     <input
                         type="email"
                         placeholder="Email"
                         name="email"
+                        value={values.email}
                         onChange={handleChange}
                     />
                     <input
                         type="password"
                         placeholder="Password"
                         name="password"
+                        value={values.password}
                         onChange={handleChange}
                     />
                     <input
@@ -100,6 +160,40 @@ const FormContainer = styled.div`
             color: white;
             width: 100%;
             font-size: 1rem;
+
+            &:focus {
+                border: #00000076 1rem solid #997af0;
+                outline: none;
+            }
+        }
+
+        button {
+            background-color: #997af0;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 0.4rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+            transition: 0.5s ease-in-out;
+
+            &:hover {
+                background-color: #4e0eff;
+            }
+        }
+
+        span {
+            color: white;
+            text-transform: uppercase;
+
+            a {
+                color: #4e0eff;
+                text-transform: none;
+                font-weight: bold;
+                text-decoration: none;
+            }
         }
     }
 `;
